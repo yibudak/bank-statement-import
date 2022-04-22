@@ -301,6 +301,18 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
 
 
         transaction['name'] = description or _('N/A')
+
+        if note and notes:
+            note = '%s\n%s' % (
+                note,
+                note.strip(),
+            )
+        elif note:
+            note = note.strip()
+        if note:
+            transaction['note'] = note
+            transaction['name'] += '\n' + note
+
         if reference:
             transaction['ref'] = reference
 
@@ -317,16 +329,6 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
             note += _('Transaction ID: %s; ') % (
                 transaction_id,
             )
-        if note and notes:
-            note = '%s\n%s' % (
-                note,
-                note.strip(),
-            )
-        elif note:
-            note = note.strip()
-        if note:
-            transaction['note'] = note
-            transaction['name'] += '\n' + note
 
         if partner_name:
             transaction['partner_name'] = partner_name
