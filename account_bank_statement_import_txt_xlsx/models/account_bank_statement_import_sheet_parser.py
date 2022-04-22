@@ -52,10 +52,7 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
         ).name
         account_number = journal.bank_account_id.acc_number
 
-        name = _('%s: %s') % (
-            journal.code,
-            path.basename(filename),
-        )
+
         lines = self._parse_lines(mapping, data_file, currency_code)
         if not lines:
             return currency_code, account_number, [{
@@ -69,6 +66,8 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
         ))
         first_line = lines[0]
         last_line = lines[-1]
+
+        name = '%s: %s' % (journal.code, first_line['timestamp'].date().strftime("%d/%m/%Y"))
         data = {
             'name': name,
             'date': first_line['timestamp'].date(),
@@ -298,10 +297,8 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
                 })
 
         if transaction_id:
-            transaction['unique_import_id'] = '%s-%s' % (
-                transaction_id,
-                int(timestamp.timestamp()),
-            )
+            transaction['unique_import_id'] = transaction_id
+
 
         transaction['name'] = description or _('N/A')
         if reference:
@@ -329,6 +326,7 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
             note = note.strip()
         if note:
             transaction['note'] = note
+            transaction['name'] += '\n' + note
 
         if partner_name:
             transaction['partner_name'] = partner_name
