@@ -320,7 +320,7 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
         if note and notes:
             note = '%s\n%s' % (
                 note,
-                note.strip(),
+                notes.strip(),
             )
         elif note:
             note = note.strip()
