@@ -147,6 +147,9 @@ class AccountBankStatementImportSheetMapping(models.Model):
         string='Bank Account column',
         help='Partner\'s bank account',
     )
+    header_line_count = fields.Integer(string='Header line count', default=1)
+    footer_line_count = fields.Integer(string='Footer line count', default=0)
+
 
     @api.onchange('float_thousands_sep')
     def onchange_thousands_separator(self):

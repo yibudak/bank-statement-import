@@ -115,7 +115,10 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
             )
 
         if isinstance(csv_or_xlsx, tuple):
-            header = [str(value) for value in csv_or_xlsx[1].row_values(0)]
+            header_line = 0
+            if mapping.header_line_count:
+                header_line = mapping.header_line_count - 1
+            header = [str(value) for value in csv_or_xlsx[1].row_values(header_line)]
         else:
             header = [value.strip() for value in next(csv_or_xlsx)]
         timestamp_column = header.index(mapping.timestamp_column)
@@ -150,7 +153,14 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
             if mapping.bank_account_column else None
 
         if isinstance(csv_or_xlsx, tuple):
-            rows = range(1, csv_or_xlsx[1].nrows)
+            start_row = 1
+            end_row = csv_or_xlsx[1].nrows
+            if mapping.header_line_count:
+                start_row = mapping.header_line_count
+            if mapping.footer_line_count:
+                end_row = end_row - mapping.footer_line_count
+            rows = range(start_row, end_row)
+
         else:
             rows = csv_or_xlsx
 

@@ -59,6 +59,9 @@
                         <field name="partner_name_column"/>
                         <field name="bank_name_column"/>
                         <field name="bank_account_column"/>
+                        <field name="header_line_count"/>
+                        <field name="footer_line_count"/>
+
                     </group>
                 </sheet>
             </form>
