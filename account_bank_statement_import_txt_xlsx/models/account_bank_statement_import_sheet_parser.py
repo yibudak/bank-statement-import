@@ -215,7 +215,7 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
                 )
 
             amount = self._parse_decimal(amount, mapping)
-            if balance:
+            if balance or balance is not None:
                 balance = self._parse_decimal(balance, mapping)
             else:
                 balance = None
