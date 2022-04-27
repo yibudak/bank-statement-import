@@ -35,4 +35,5 @@ class AccountBankStatementImport(models.TransientModel):
                     'account_bank_statement_import_txt_xlsx_test'):
                 raise
             _logger.warning('Sheet parser error', exc_info=True)
+            raise
         return super()._parse_file(data_file)
