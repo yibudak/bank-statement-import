@@ -52,7 +52,10 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
         ).name
         account_number = journal.bank_account_id.acc_number
 
-
+        name = _('%s: %s') % (
+            journal.code,
+            path.basename(filename),
+        )
         lines = self._parse_lines(mapping, data_file, currency_code)
         if not lines:
             return currency_code, account_number, [{
@@ -66,8 +69,6 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
         ))
         first_line = lines[0]
         last_line = lines[-1]
-
-        name = '%s: %s' % (journal.code, first_line['timestamp'].date().strftime("%d/%m/%Y"))
         data = {
             'name': name,
             'date': first_line['timestamp'].date(),
@@ -114,10 +115,7 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
             )
 
         if isinstance(csv_or_xlsx, tuple):
-            header_line = 0
-            if mapping.header_line_count:
-                header_line = mapping.header_line_count - 1
-            header = [str(value) for value in csv_or_xlsx[1].row_values(header_line)]
+            header = [str(value) for value in csv_or_xlsx[1].row_values(0)]
         else:
             header = [value.strip() for value in next(csv_or_xlsx)]
         timestamp_column = header.index(mapping.timestamp_column)
@@ -152,14 +150,7 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
             if mapping.bank_account_column else None
 
         if isinstance(csv_or_xlsx, tuple):
-            start_row = 1
-            end_row = csv_or_xlsx[1].nrows
-            if mapping.header_line_count:
-                start_row = mapping.header_line_count
-            if mapping.footer_line_count:
-                end_row = end_row - mapping.footer_line_count
-            rows = range(start_row, end_row)
-
+            rows = range(1, csv_or_xlsx[1].nrows)
         else:
             rows = csv_or_xlsx
 
@@ -215,7 +206,7 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
                 )
 
             amount = self._parse_decimal(amount, mapping)
-            if balance or balance is not None:
+            if balance:
                 balance = self._parse_decimal(balance, mapping)
             else:
                 balance = None
@@ -297,8 +288,10 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
                 })
 
         if transaction_id:
-            transaction['unique_import_id'] = transaction_id
-
+            transaction['unique_import_id'] = '%s-%s' % (
+                transaction_id,
+                int(timestamp.timestamp()),
+            )
 
         transaction['name'] = description or _('N/A')
         if reference:
@@ -318,17 +311,13 @@ class AccountBankStatementImportSheetParser(models.TransientModel):
                 transaction_id,
             )
         if note and notes:
-            note = '%s\n%s' % (
-                note,
-                notes.strip(),
-            )
+            note = "{}\n{}".format(notes, note.strip())
         elif note:
             note = note.strip()
+        elif notes:
+            note = notes
         if note:
             transaction['note'] = note
-
-        if line.get('notes'):
-            transaction['name'] += ' ' + line.get('notes')
 
         if partner_name:
             transaction['partner_name'] = partner_name
