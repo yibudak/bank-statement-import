@@ -223,7 +223,7 @@ class OnlineBankStatementProvider(models.Model):
                 if (
                     not lines_data
                     and not statement_values
-                    and not self.allow_empty_statements
+                    and not provider.allow_empty_statements
                 ):
                     # Continue with next possible statement.
                     statement_date_since = statement_date_until
